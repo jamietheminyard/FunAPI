@@ -34,10 +34,9 @@ app.post('/process_post', urlencodedParser, function (req, res) {
 
       // Create response
       response = {
-         firstname:req.body.firstname,
-         lastname:req.body.lastname
+         firstname:req.body.firstname
       };
-      console.log("Added user " + req.body.firstname + " " + req.body.lastname);
+      console.log("Added user " + req.body.firstname);
 
       res.send(JSON.stringify(response));
 })
@@ -50,7 +49,7 @@ app.get('/:id', function (req, res) {
 
 // DELETE request for a user
 app.delete('/deleteUser/:id', function (req, res) {
-   res.status(403);
+   res.status(403); // For testing purposes throw a 403 forbidden
    res.end();
 })
 
