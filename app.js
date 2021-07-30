@@ -4,8 +4,8 @@ let bodyParser = require('body-parser');
 let app = express();
 const {v4} = require('uuid');
 
-// Fake in memory database with a default user
-let users = ["Jamie"];
+// Fake in memory database with a default order
+let orders = ["4d2a4b38-f167-11eb-9a03-0242ac130003"];
 
 let urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser);
@@ -17,24 +17,20 @@ app.get('/', function (req, res) {
     res.sendFile( __dirname + "/" + "AddOrder.html" );
 })
 
-// GET request to list all users
-app.get('/listUsers', function (req, res) {
-    console.log("GET request for /listUsers");
-
-    for (let i = 0; i < users.length; i++){
-        console.log("  User " + i + " - " + users[i]);
-    }
-    res.send(JSON.stringify(users));
+// DELETE request for a user
+app.delete('/:id', function (req, res) {
+    res.status(403); // For testing purposes throw a 403 forbidden
+    res.end();
 })
 
 // POST request to add a new user
 app.post('/submit_order', urlencodedParser, function (req, res) {
     console.log("POST request for /submit_order");
-    // Put the new user into the "database"
-    users.push(req.body.firstname);
 
-    // Create response
     let ordernum = v4(); // UUID
+
+    // Put the new order into the "database"
+    orders.push(ordernum);
     response = {
         ordernum:ordernum
     };
@@ -44,16 +40,22 @@ app.post('/submit_order', urlencodedParser, function (req, res) {
     res.send(ordernum);
 })
 
-// GET request for a user
-app.get('/:id', function (req, res) {
-    console.log("GET request for " + req.params.id + " - " + users[req.params.id]);
-    res.send( JSON.stringify(users[req.params.id]));
+// GET request to list all orders
+app.get('/listOrders', function (req, res) {
+    console.log("GET request for /listOrders");
+
+    for (let i = 0; i < orders.length; i++){
+        console.log("  Order " + i + " - " + orders[i]);
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(orders));
 })
 
-// DELETE request for a user
-app.delete('/:id', function (req, res) {
-    res.status(403); // For testing purposes throw a 403 forbidden
-    res.end();
+// GET request for an order
+app.get('/:id', function (req, res) {
+    console.log("GET request for " + req.params.id + " - " + orders[req.params.id]);
+    res.setHeader('Content-Type', 'application/json');
+    res.send( JSON.stringify(orders[req.params.id]));
 })
 
 module.exports = app;
