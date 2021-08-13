@@ -1,29 +1,27 @@
 let express = require('express'); // don't use var, use let. requires all at the top
 let fs = require("fs");
 let bodyParser = require('body-parser');
-let app = express();
+let db = require("./database.js");
 const {v4} = require('uuid');
 
-// Fake in memory database with a default order
-let orders = ["4d2a4b38-f167-11eb-9a03-0242ac130003"];
-
+let app = express();
 let urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser);
-
 app.use(express.static('public'));
 app.use(bodyParser.json());
 
+// GET request for /
 app.get('/', function (req, res) {
     res.sendFile( __dirname + "/" + "AddOrder.html" );
 })
 
-// DELETE request for a user
+// DELETE request for an order
 app.delete('/:id', function (req, res) {
     res.status(403); // For testing purposes throw a 403 forbidden
     res.end();
 })
 
-// POST request to add a new user
+// POST request to add a new order
 app.post('/submit_order', urlencodedParser, function (req, res) {
     console.log("POST request for /submit_order");
 
@@ -44,11 +42,18 @@ app.post('/submit_order', urlencodedParser, function (req, res) {
 app.get('/listOrders', function (req, res) {
     console.log("GET request for /listOrders");
 
-    for (let i = 0; i < orders.length; i++){
-        console.log("  Order " + i + " - " + orders[i]);
-    }
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(orders));
+    let sql = "select * from orders"
+    let params = []
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+    });
 })
 
 // GET request for an order
