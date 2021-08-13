@@ -25,17 +25,27 @@ app.delete('/:id', function (req, res) {
 app.post('/submit_order', urlencodedParser, function (req, res) {
     console.log("POST request for /submit_order");
 
-    let ordernum = v4(); // UUID
+    let newordernum = v4(); // UUID
 
-    // Put the new order into the "database"
-    orders.push(ordernum);
-    response = {
-        ordernum:ordernum
-    };
-    console.log("Added order for " + req.body.firstname + " with order number " + ordernum);
-
-    //res.send(JSON.stringify(response));
-    res.send(ordernum);
+    let data = {
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        ordernum : newordernum
+    }
+    let sql ='INSERT INTO orders (firstname, lastname, ordernum) VALUES (?,?,?)'
+    let params =[data.firstname, data.lastname, data.ordernum]
+    db.run(sql, params, function (err, result) {
+        if (err) {
+            console.log("ERROR while adding an order for " + req.body.firstname + " " + req.body.lastname);
+            res.status(400).json({ "error": err.message })
+            return;
+        }
+        else{
+            res.status(200).send(newordernum);
+            console.log("Added order number " + newordernum + " for " + req.body.firstname + " " + req.body.lastname);
+            return;
+        }
+    });
 })
 
 // GET request to list all orders
@@ -58,9 +68,20 @@ app.get('/listOrders', function (req, res) {
 
 // GET request for an order
 app.get('/:id', function (req, res) {
-    console.log("GET request for " + req.params.id + " - " + orders[req.params.id]);
-    res.setHeader('Content-Type', 'application/json');
-    res.send( JSON.stringify(orders[req.params.id]));
+    console.log("GET request for order number " + req.params.id);
+
+    let sql = "select * from orders where ordernum = ?"
+    let params = [req.params.id]
+    db.get(sql, params, (err, row) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+    });
 })
 
 module.exports = app;

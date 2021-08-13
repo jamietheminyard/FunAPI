@@ -15,7 +15,8 @@ describe("Test the API", () => {
 
     test("The API should respond with a UUID order number when an order is submitted by POST method to /submit_order", async () => {
         const json = {
-            firstname: "Jenny"
+            firstname: "Jenny",
+            lastname: "Gump"
         }
         const response = await request(app).post("/submit_order").send(json);
         expect(response.statusCode).toBe(200);
@@ -28,9 +29,11 @@ describe("Test the API", () => {
         expect(response.type).toEqual('application/json')
     });
 
-    test("The API should respond with a JSON object representing an order for a GET request to /1", async () => {
-        const response = await request(app).get("/1");
+    test("The API should respond with a JSON object representing an order for 'Jamie Minyard' for a GET request to /c08793db-c377-470d-9fa8-f48ad45c541b", async () => {
+        const response = await request(app).get("/c08793db-c377-470d-9fa8-f48ad45c541b");
         expect(response.statusCode).toBe(200);
-        expect(response.type).toEqual('application/json')
+        expect(response.type).toEqual('application/json');
+        expect(response.text).toContain("Jamie");
+        expect(response.text).toContain("Minyard");
     });
 });
