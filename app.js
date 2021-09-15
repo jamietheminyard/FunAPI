@@ -2,7 +2,8 @@ let express = require('express'); // don't use var, use let. requires all at the
 let fs = require("fs");
 let bodyParser = require('body-parser');
 let db = require("./database.js");
-const {v4} = require('uuid');
+const {v4, validate} = require('uuid');
+const Order = require("./entities/Order");
 
 let app = express();
 let urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -67,21 +68,31 @@ app.get('/listOrders', function (req, res) {
 })
 
 // GET request for an order
-app.get('/:id', function (req, res) {
+app.get('/:id', async function (req, res) {
+    if (!req || !req.params || !req.params.id) {
+        console.log("Param ID missing");
+        return res.status(400).json({"error": "Param ID missing"});
+    }
+
+    // param ID should be a UUID
+    if (!validate(req.params.id, 4)) {
+        console.log("Param ID failed validation");
+        return res.status(400).json({"error": "Param ID failed validation"});
+    }
+
+    try {
+        const row = await Order.read(req.params.id);
+        res.json({
+            "message": "success",
+            "data": row
+        })
+    } catch (er) {
+        return res.status(404).json({"error": "data not found"});
+    }
+
     console.log("GET request for order number " + req.params.id);
 
-    let sql = "select * from orders where ordernum = ?"
-    let params = [req.params.id]
-    db.get(sql, params, (err, row) => {
-        if (err) {
-            res.status(400).json({"error":err.message});
-            return;
-        }
-        res.json({
-            "message":"success",
-            "data":row
-        })
-    });
+
 })
 
 module.exports = app;
