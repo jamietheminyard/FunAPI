@@ -17,6 +17,6 @@ db.query('SELECT table_schema,table_name FROM information_schema.tables;', (err,
     db.end();
 });
 
-
+console.log('Connected to the Postgres database.')
 
 module.exports = db;
