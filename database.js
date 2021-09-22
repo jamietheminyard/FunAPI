@@ -1,31 +1,22 @@
-let sqlite3 = require('sqlite3').verbose()
-const {v4} = require('uuid');
+const { Client } = require('pg');
 
-const DBSOURCE = "db.sqlite"
-
-let db = new sqlite3.Database(DBSOURCE, (err) => {
-    if (err) {
-        // Cannot open database
-        console.error(err.message)
-        throw err
-    }else{
-        console.log('Connected to the SQLite database.')
-        db.run(`CREATE TABLE orders (
-            firstname text, 
-            lastname text,
-            ordernum text
-            )`,
-            (err) => {
-                if (err) {
-                    // Table already created
-                }else{
-                    // Table just created, creating some rows
-                    var insert = 'INSERT INTO orders (firstname, lastname, ordernum) VALUES (?,?,?)'
-                    db.run(insert, ["Jamie","Minyard",v4()])
-                }
-            });
+const db = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
     }
 });
+
+db.connect();
+
+db.query('SELECT table_schema,table_name FROM information_schema.tables;', (err, res) => {
+    if (err) throw err;
+    for (let row of res.rows) {
+        console.log(JSON.stringify(row));
+    }
+    db.end();
+});
+
 
 
 module.exports = db;
