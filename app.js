@@ -35,7 +35,7 @@ app.post('/submit_order', urlencodedParser, function (req, res) {
     }
     let sql ='INSERT INTO orders (firstname, lastname, ordernum) VALUES (?,?,?)'
     let params =[data.firstname, data.lastname, data.ordernum]
-    db.run(sql, params, function (err, result) {
+    db.query(sql, params, function (err, result) {
         if (err) {
             console.log("ERROR while adding an order for " + req.body.firstname + " " + req.body.lastname);
             res.status(400).json({ "error": err.message })
@@ -50,12 +50,12 @@ app.post('/submit_order', urlencodedParser, function (req, res) {
 })
 
 // GET request to list all orders
-app.get('/listOrders', function (req, res) {
+app.get('/listOrders', async function (req, res) {
     console.log("GET request for /listOrders");
 
     let sql = "select * from orders"
     let params = []
-    db.all(sql, params, (err, rows) => {
+    db.query(sql, params, (err, rows) => {
         if (err) {
             res.status(400).json({"error":err.message});
             return;
