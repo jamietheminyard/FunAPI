@@ -16,6 +16,10 @@ app.get('/', function (req, res) {
     res.sendFile( __dirname + "/" + "AddOrder.html" );
 })
 
+// Gracefully handle requests for favicon.ico
+app.get('/favicon.ico', function (req, res) {
+})
+
 // DELETE request for an order
 app.delete('/:id', function (req, res) {
     res.status(403); // For testing purposes throw a 403 forbidden
@@ -69,15 +73,18 @@ app.get('/listOrders', async function (req, res) {
 
 // GET request for an order
 app.get('/:id', async function (req, res) {
+    console.log("GET request for order number " + req.params.id);
+
+    // Ensure there's an order number passed in
     if (!req || !req.params || !req.params.id) {
-        console.log("Param ID missing");
-        return res.status(400).json({"error": "Param ID missing"});
+        console.log("Param ID (order number) is missing from the request.");
+        return res.status(400).json({"error": "Order number cannot be empty."});
     }
 
-    // param ID should be a UUID
+    // The parameter should be a UUID
     if (!validate(req.params.id, 4)) {
-        console.log("Param ID failed validation");
-        return res.status(400).json({"error": "Param ID failed validation"});
+        console.log("Param ID (order number) failed validation. Not a valid UUID.");
+        return res.status(400).json({"error": req.params.id + " is not a valid order number."});
     }
 
     try {
@@ -87,12 +94,8 @@ app.get('/:id', async function (req, res) {
             "data": row
         })
     } catch (er) {
-        return res.status(404).json({"error": "data not found"});
+        return res.status(404).json({"error": "Order " + req.params.id + " not found."});
     }
-
-    console.log("GET request for order number " + req.params.id);
-
-
 })
 
 module.exports = app;
