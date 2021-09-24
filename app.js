@@ -1,4 +1,4 @@
-let express = require('express'); // don't use var, use let. requires all at the top
+let express = require('express');
 let fs = require("fs");
 let bodyParser = require('body-parser');
 let db = require("./database.js");
@@ -6,15 +6,21 @@ let app = express();
 let urlencodedParser = bodyParser.urlencoded({ extended: false });
 const {v4, validate} = require('uuid');
 const Order = require("./entities/Order");
-const cors = require("cors");
+//const cors = require("cors");
 
 app.use(urlencodedParser);
 app.use(express.static('public'));
 app.use(bodyParser.json());
-app.use(cors());
+//app.use(cors());
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
 // GET request for /
 app.get('/', function (req, res) {
+    console.log("GET request for /");
     res.sendFile( __dirname + "/" + "AddOrder.html" );
 })
 
@@ -24,6 +30,7 @@ app.get('/favicon.ico', function (req, res) {
 
 // DELETE request for an order
 app.delete('/:id', function (req, res) {
+    console.log("DELETE request for " + req.params.id);
     res.status(403); // For testing purposes throw a 403 forbidden
     res.end();
 })
@@ -89,15 +96,29 @@ app.get('/:id', async function (req, res) {
         return res.status(400).json({"error": req.params.id + " is not a valid order number."});
     }
 
-    try {
-        const row = await Order.read(req.params.id);
+    let sql = "select * from orders" //<----- fix this, it's just selecting all for now
+    let params = []
+    db.query(sql, params, (err, rows) => {
+        if (err) {
+            res.status(400).json({"error":err.message});
+            return;
+        }
         res.json({
-            "message": "success",
-            "data": row
+            "firstname":"Blah",
+            "lastname":"Blabb",
+            "data":rows
         })
-    } catch (er) {
-        return res.status(404).json({"error": "Order " + req.params.id + " not found."});
-    }
+    });
+
+//    try {
+//        const row = await Order.read(req.params.id);
+//        res.json({
+//            "message": "success",
+//            "data": row
+//        })
+//    } catch (er) {
+//        return res.status(404).json({"error": "Order " + req.params.id + " not found."});
+//    }
 })
 
 module.exports = app;
