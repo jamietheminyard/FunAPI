@@ -2,14 +2,16 @@ let express = require('express'); // don't use var, use let. requires all at the
 let fs = require("fs");
 let bodyParser = require('body-parser');
 let db = require("./database.js");
+let app = express();
+let urlencodedParser = bodyParser.urlencoded({ extended: false });
 const {v4, validate} = require('uuid');
 const Order = require("./entities/Order");
+const cors = require("cors");
 
-let app = express();
-let urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser);
 app.use(express.static('public'));
 app.use(bodyParser.json());
+app.use(cors());
 
 // GET request for /
 app.get('/', function (req, res) {
